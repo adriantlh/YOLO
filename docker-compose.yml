@@ -1,0 +1,61 @@
+services:
+  yolo-serve:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: yolo-serve
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      # Optional overrides (uncomment and set as needed):
+      # - YOLO_MODEL_CFG=serve/config/model.yaml
+      # - YOLO_DATA_YAML=serve/config/data.yaml
+      # - YOLO_DEFECT_TYPES=serve/config/Defect Types.txt
+      # - YOLO_WEIGHT_PATH=/app/serve/weights/model.pt
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./serve/weights:/app/serve/weights:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "serve/healthcheck.py"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    # GPU note:
+    # To use an NVIDIA GPU, run with: `docker compose run --rm --gpus all yolo-serve`
+    # or configure the default runtime on the host. Exact config depends on your Docker setup.
+
+  yolo-serve-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    container_name: yolo-serve-gpu
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      # Optional overrides:
+      # - YOLO_MODEL_CFG=serve/config/model.yaml
+      # - YOLO_DATA_YAML=serve/config/data.yaml
+      # - YOLO_DEFECT_TYPES=serve/config/Defect Types.txt
+      # - YOLO_WEIGHT_PATH=/app/serve/weights/model.pt
+      # For NVIDIA runtime env hints (may be optional):
+      # - NVIDIA_VISIBLE_DEVICES=all
+      # - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./serve/weights:/app/serve/weights:ro
+    restart: unless-stopped
+    profiles: [gpu]
+    healthcheck:
+      test: ["CMD", "python3", "serve/healthcheck.py"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    # Start with GPU access via CLI flag:
+    #   docker compose --profile gpu run --rm --gpus all yolo-serve-gpu
+    # Or with up (runtime configured on host):
+    #   COMPOSE_PROFILES=gpu docker compose up -d

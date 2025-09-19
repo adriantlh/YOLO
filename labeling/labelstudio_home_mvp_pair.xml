@@ -1,0 +1,93 @@
+<View>
+  <Header value="Home Defect Detection (MVP) — Near/Far Pair"/>
+  <Text name="instruction" value="Label BOTH panels. Draw tight boxes around DEFECT areas (not whole object). Choose the combined object_defect class. Keep pair consistency."/>
+
+  <Style>
+    .lsf-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .lsf-col-title { font-weight: 600; margin: 4px 0; }
+    .lsf-panel { border: 1px solid #ddd; padding: 4px; }
+  </Style>
+
+  <View className="lsf-two-col">
+    <View className="lsf-panel">
+      <Header value="Far" className="lsf-col-title"/>
+      <Image name="image_far" value="$image_far" zoomControl="true" rotateControl="true"/>
+      <RectangleLabels name="label_far" toName="image_far" showInline="true">
+        <Label value="wall_cracked"/>
+        <Label value="wall_stained"/>
+        <Label value="wall_discoloured"/>
+        <Label value="wall_hollow"/>
+
+        <Label value="ceiling_stained"/>
+        <Label value="ceiling_cracked"/>
+        <Label value="ceiling_discoloured"/>
+        <Label value="ceiling_hollow"/>
+
+        <Label value="tile_cracked"/>
+        <Label value="tile_stained"/>
+        <Label value="tile_discoloured"/>
+
+        <Label value="floor_cracked"/>
+        <Label value="floor_stained"/>
+
+        <Label value="door_scratched"/>
+        <Label value="door_dented"/>
+        <Label value="door_discoloured"/>
+
+        <Label value="sink_stained"/>
+        <Label value="sink_discoloured"/>
+
+        <Label value="toilet_bowl_stained"/>
+        <Label value="toilet_bowl_cracked"/>
+
+        <Label value="plaster_hollow"/>
+        <Label value="plaster_cracked"/>
+
+        <Label value="handrail_dented"/>
+        <Label value="handrail_scratched"/>
+      </RectangleLabels>
+    </View>
+
+    <View className="lsf-panel">
+      <Header value="Near" className="lsf-col-title"/>
+      <Image name="image_near" value="$image_near" zoomControl="true" rotateControl="true"/>
+      <RectangleLabels name="label_near" toName="image_near" showInline="true">
+        <Label value="wall_cracked"/>
+        <Label value="wall_stained"/>
+        <Label value="wall_discoloured"/>
+        <Label value="wall_hollow"/>
+
+        <Label value="ceiling_stained"/>
+        <Label value="ceiling_cracked"/>
+        <Label value="ceiling_discoloured"/>
+        <Label value="ceiling_hollow"/>
+
+        <Label value="tile_cracked"/>
+        <Label value="tile_stained"/>
+        <Label value="tile_discoloured"/>
+
+        <Label value="floor_cracked"/>
+        <Label value="floor_stained"/>
+
+        <Label value="door_scratched"/>
+        <Label value="door_dented"/>
+        <Label value="door_discoloured"/>
+
+        <Label value="sink_stained"/>
+        <Label value="sink_discoloured"/>
+
+        <Label value="toilet_bowl_stained"/>
+        <Label value="toilet_bowl_cracked"/>
+
+        <Label value="plaster_hollow"/>
+        <Label value="plaster_cracked"/>
+
+        <Label value="handrail_dented"/>
+        <Label value="handrail_scratched"/>
+      </RectangleLabels>
+    </View>
+  </View>
+
+  <TextArea name="notes" toName="image_far" rows="3" placeholder="Optional notes (e.g., context, materials, ambiguities)"/>
+</View>
+

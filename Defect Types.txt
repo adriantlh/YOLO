@@ -1,0 +1,2 @@
+Object Types: Ceiling, Floor, Tile, Plaster, Screening, Handrail, Toilet Bowl, Sink, Door, wall
+Defect Types: Hollow, Stained, Discoloured, Dented, TCrack, Scratched, Cracked

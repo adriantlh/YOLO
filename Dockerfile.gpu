@@ -1,0 +1,36 @@
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HOST=0.0.0.0 \
+    PORT=8000
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        python3-dev \
+        build-essential \
+        libglib2.0-0 \
+        libgl1 && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy only requirements first for better caching
+COPY requirements.txt ./
+
+# Install CUDA-enabled PyTorch matching CUDA 12.1, then the rest
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 torch torchvision && \
+    python3 -m pip install --no-cache-dir -r requirements.txt
+
+# Copy the project
+COPY . .
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD ["python3", "serve/healthcheck.py"]
+
+CMD ["bash", "serve/start.sh"]

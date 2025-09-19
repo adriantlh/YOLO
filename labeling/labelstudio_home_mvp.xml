@@ -1,0 +1,40 @@
+<View>
+  <Header value="Home Defect Detection (MVP)"/>
+  <Text name="instruction" value="Draw a box tightly around the defect region (not the whole object). Pick the object_defect label."/>
+  <Image name="image" value="$image" zoomControl="true" rotateControl="true"/>
+  <RectangleLabels name="label" toName="image" showInline="true">
+    <Label value="wall_cracked"/>
+    <Label value="wall_stained"/>
+    <Label value="wall_discoloured"/>
+    <Label value="wall_hollow"/>
+
+    <Label value="ceiling_stained"/>
+    <Label value="ceiling_cracked"/>
+    <Label value="ceiling_discoloured"/>
+    <Label value="ceiling_hollow"/>
+
+    <Label value="tile_cracked"/>
+    <Label value="tile_stained"/>
+    <Label value="tile_discoloured"/>
+
+    <Label value="floor_cracked"/>
+    <Label value="floor_stained"/>
+
+    <Label value="door_scratched"/>
+    <Label value="door_dented"/>
+    <Label value="door_discoloured"/>
+
+    <Label value="sink_stained"/>
+    <Label value="sink_discoloured"/>
+
+    <Label value="toilet_bowl_stained"/>
+    <Label value="toilet_bowl_cracked"/>
+
+    <Label value="plaster_hollow"/>
+    <Label value="plaster_cracked"/>
+
+    <Label value="handrail_dented"/>
+    <Label value="handrail_scratched"/>
+  </RectangleLabels>
+</View>
+

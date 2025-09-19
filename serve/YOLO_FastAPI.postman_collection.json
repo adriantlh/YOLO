@@ -1,0 +1,77 @@
+{
+  "info": {
+    "name": "YOLO FastAPI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Test collection for YOLO FastAPI server. Set baseUrl to your server (default http://localhost:8000)."
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/healthz", "host": ["{{baseUrl}}"], "path": ["healthz"] }
+      }
+    },
+    {
+      "name": "Predict (JSON)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": [] }
+          ]
+        },
+        "url": { "raw": "{{baseUrl}}/predict", "host": ["{{baseUrl}}"], "path": ["predict"] }
+      }
+    },
+    {
+      "name": "Predict (Annotated Image)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": [] }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/predict?visualize=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["predict"],
+          "query": [{ "key": "visualize", "value": "true" }]
+        }
+      }
+    },
+    {
+      "name": "Predict by URL (JSON)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"url\": \"https://example.com/image.jpg\"\n}" },
+        "url": { "raw": "{{baseUrl}}/predict_by_url", "host": ["{{baseUrl}}"], "path": ["predict_by_url"] }
+      }
+    },
+    {
+      "name": "Predict by URL (Annotated Image)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"url\": \"https://example.com/image.jpg\"\n}" },
+        "url": {
+          "raw": "{{baseUrl}}/predict_by_url?visualize=true",
+          "host": ["{{baseUrl}}"],
+          "path": ["predict_by_url"],
+          "query": [{ "key": "visualize", "value": "true" }]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000" }
+  ]
+}
+

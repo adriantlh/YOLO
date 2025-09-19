@@ -1,0 +1,209 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 2459 >>
+stream
+BT
+/F1 12 Tf
+72 708 Td
+14 TL
+(Home Defect Detection: Multi‑Step Plan) Tj
+T*
+() Tj
+T*
+(1\) Define Labels And Data Schema) Tj
+T*
+(- Taxonomy: split into two lists you control.) Tj
+T*
+(  - Object types: wall, window, door, roof, pipe, ceiling, floor, outlet, sink, tile.) Tj
+T*
+(  - Defect types: crack, leak, mold, rust, dent, scratch, paint_peel, stain.) Tj
+T*
+(- Encoding strategy \(MVP\): combined classes like window_crack, wall_mold, pipe_leak.) Tj
+T*
+(- Keep combinations small initially \(20–60\), expand later.) Tj
+T*
+() Tj
+T*
+(2\) Set Up Labeling Workflow) Tj
+T*
+(- Keep near/far pairs per case with consistent names \(e.g., scene123_far.jpg, ) Tj
+T*
+(scene123_near.jpg\).) Tj
+T*
+(- Annotate defect regions with bounding boxes and assign combined class.) Tj
+T*
+(- Use CVAT/Label Studio; export COCO detection format.) Tj
+T*
+() Tj
+T*
+(3\) Prepare Dataset In COCO Format) Tj
+T*
+(- Structure: data/home/train, data/home/val, and COCO JSON in data/home/annotations.) Tj
+T*
+(- Dataset YAML: yolo/config/dataset/home.yaml with class_list and class_num.) Tj
+T*
+(- Ensure COCO category names exactly match class_list entries.) Tj
+T*
+() Tj
+T*
+(4\) Configure YOLO Model/Classes) Tj
+T*
+(- Start with v9-s for speed; v9-c/m for accuracy.) Tj
+T*
+(- dataset=home, set image_size \(e.g., 640/768\), verify class_num matches list length.) Tj
+T*
+() Tj
+T*
+(5\) Run Baseline Training) Tj
+T*
+(- pip install -r requirements.txt) Tj
+T*
+(- Train: python yolo/lazy.py task=train dataset=home model=v9-s name=home-defect-v1 ) Tj
+T*
+(task.data.batch_size=16 device=cuda) Tj
+T*
+(- To train from scratch: add weight=False) Tj
+T*
+(- Outputs/checkpoints under runs/train/home-defect-v1) Tj
+T*
+() Tj
+T*
+(6\) Evaluate And Refine Taxonomy) Tj
+T*
+(- Validate: python yolo/lazy.py task=validation dataset=home name=home-defect-v1-val ) Tj
+T*
+(device=cuda) Tj
+T*
+(- Review per-class AP; prune/merge confusing or rare classes; add data for weak classes.) Tj
+T*
+() Tj
+T*
+(7\) Export Model \(ONNX/TensorRT\)) Tj
+T*
+(- For fast inference: task.fast_inference=onnx or trt with your checkpoint weight path.) Tj
+T*
+(- Produce reproducible artifacts for deployment.) Tj
+T*
+() Tj
+T*
+(8\) Design AWS Inference Architecture) Tj
+T*
+(- Steady GPU throughput: ECS/EC2 GPU behind ALB; containerized FastAPI with Torch/ONNX/TRT.) Tj
+T*
+(- Bursty traffic: API Gateway -> Lambda with ONNX Runtime \(CPU\) or custom GPU hosts.) Tj
+T*
+(- Use S3 for uploads/results; presigned URLs for Android.) Tj
+T*
+ET
+endstream
+endobj
+3 0 obj
+<< /Length 1963 >>
+stream
+BT
+/F1 12 Tf
+72 708 Td
+14 TL
+(- Observability with CloudWatch logs/metrics; trace request IDs.) Tj
+T*
+() Tj
+T*
+(9\) Implement API + Storage) Tj
+T*
+(- Endpoint POST /analyze accepts two images \(multipart\) or S3 URLs: image_far, image_near.) Tj
+T*
+(- Returns list of detections with bbox, class, score; also split object/defect fields.) Tj
+T*
+(- Secure with IAM for S3 access; use API keys/JWT as needed.) Tj
+T*
+() Tj
+T*
+(10\) Android App Integration) Tj
+T*
+(- Upload both images via presigned S3 PUT URLs.) Tj
+T*
+(- Call /analyze with S3 URLs and a pair_id.) Tj
+T*
+(- Display overlays and labels; optionally show remediation steps.) Tj
+T*
+() Tj
+T*
+(11\) Add Near/Far Fusion Logic) Tj
+T*
+(- MVP: detect on each image, union + NMS, keep max-confidence labels; retain uniques.) Tj
+T*
+(- Later: cross-image matching by IoU after resize or simple crop feature matching.) Tj
+T*
+(- Advanced \(optional\): train with paired inputs \(code changes required\).) Tj
+T*
+() Tj
+T*
+(12\) Monitoring And Iteration) Tj
+T*
+(- Track latency, GPU utilization, error rates, class distribution, and drift.) Tj
+T*
+(- Human-in-the-loop: collect low-confidence cases for relabeling.) Tj
+T*
+(- Retrain on cadence \(weekly/monthly\) as data grows.) Tj
+T*
+() Tj
+T*
+(Common Commands) Tj
+T*
+(- Train: python yolo/lazy.py task=train dataset=home model=v9-s name=home-defect-v1 ) Tj
+T*
+(device=cuda task.data.batch_size=16) Tj
+T*
+(- Validate: python yolo/lazy.py task=validation dataset=home name=home-defect-v1-val ) Tj
+T*
+(device=cuda) Tj
+T*
+(- Inference: python yolo/lazy.py task=inference dataset=home model=v9-s ) Tj
+T*
+(weight=runs/train/home-defect-v1/checkpoints/last.ckpt task.data.source=path/to/images) Tj
+T*
+(- Fast: add task.fast_inference=onnx \(or trt on GPU host\)) Tj
+T*
+() Tj
+T*
+(Notes) Tj
+T*
+(- Ensure yolo/config/dataset/home.yaml has path/train/validation and exact class_list + ) Tj
+T*
+(class_num.) Tj
+T*
+(- Start with a small, high-quality label set and expand.) Tj
+T*
+ET
+endstream
+endobj
+4 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Contents 2 0 R /Resources << /Font << /F1 1 0 R >> >> >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Contents 3 0 R /Resources << /Font << /F1 1 0 R >> >> >>
+endobj
+6 0 obj
+<< /Type /Pages /Kids [4 0 R 5 0 R] /Count 2 >>
+endobj
+7 0 obj
+<< /Type /Catalog /Pages 6 0 R >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000002589 00000 n 
+0000004603 00000 n 
+0000004729 00000 n 
+0000004855 00000 n 
+0000004918 00000 n 
+trailer
+<< /Size 8 /Root 7 0 R >>
+startxref
+4967
+%%EOF

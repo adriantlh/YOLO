@@ -1,0 +1,12 @@
+path: data/house-defect
+
+# Map phases used by the trainer/dataloader to your Roboflow export folders
+# Roboflow (YOLOv5 format) typically has: images/{train,valid,test} and labels/{train,valid,test}
+train: train
+validation: valid
+
+# Class metadata (must match your Roboflow data.yaml `names` order)
+class_num: 7
+class_list: ['baseboard', 'bottle', 'fungus', 'hole', 'radiator', 'rip', 'window']
+
+# Optional: leave auto_download unset for manual/local datasets

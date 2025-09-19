@@ -1,0 +1,18 @@
+path: data/home
+train: train
+validation: val
+
+class_num: 60
+class_list: [
+  ceiling_hollow, ceiling_stained, ceiling_discoloured, ceiling_dented, ceiling_scratched, ceiling_cracked,
+  floor_hollow, floor_stained, floor_discoloured, floor_dented, floor_scratched, floor_cracked,
+  tile_hollow, tile_stained, tile_discoloured, tile_dented, tile_scratched, tile_cracked,
+  plaster_hollow, plaster_stained, plaster_discoloured, plaster_dented, plaster_scratched, plaster_cracked,
+  screening_hollow, screening_stained, screening_discoloured, screening_dented, screening_scratched, screening_cracked,
+  handrail_hollow, handrail_stained, handrail_discoloured, handrail_dented, handrail_scratched, handrail_cracked,
+  toilet_bowl_hollow, toilet_bowl_stained, toilet_bowl_discoloured, toilet_bowl_dented, toilet_bowl_scratched, toilet_bowl_cracked,
+  sink_hollow, sink_stained, sink_discoloured, sink_dented, sink_scratched, sink_cracked,
+  door_hollow, door_stained, door_discoloured, door_dented, door_scratched, door_cracked,
+  wall_hollow, wall_stained, wall_discoloured, wall_dented, wall_scratched, wall_cracked
+]
+

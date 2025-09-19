@@ -1,0 +1,18 @@
+path: data/home
+train: train
+validation: val
+
+# Curated subset for faster start (24 classes)
+class_num: 24
+class_list: [
+  wall_cracked, wall_stained, wall_discoloured, wall_hollow,
+  ceiling_stained, ceiling_cracked, ceiling_discoloured, ceiling_hollow,
+  tile_cracked, tile_stained, tile_discoloured,
+  floor_cracked, floor_stained,
+  door_scratched, door_dented, door_discoloured,
+  sink_stained, sink_discoloured,
+  toilet_bowl_stained, toilet_bowl_cracked,
+  plaster_hollow, plaster_cracked,
+  handrail_dented, handrail_scratched
+]
+

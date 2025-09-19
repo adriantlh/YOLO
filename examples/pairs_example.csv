@@ -1,0 +1,5 @@
+pair_id,image_far,image_near
+scene001,s3://your-bucket/home/scene001_far.jpg,s3://your-bucket/home/scene001_near.jpg
+scene002,s3://your-bucket/home/scene002_far.jpg,s3://your-bucket/home/scene002_near.jpg
+scene003,/mnt/datasets/home/scene003_far.jpg,/mnt/datasets/home/scene003_near.jpg
+

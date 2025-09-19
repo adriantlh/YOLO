@@ -1,0 +1,29 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.venv/
+venv/
+env/
+.env
+.idea/
+.vscode/
+dist/
+build/
+.pytest_cache/
+*.ipynb_checkpoints
+*.egg-info/
+*.log
+**/.DS_Store
+**/Thumbs.db
+
+# Datasets, runs, caches (optional; comment out if you want them in image)
+runs/
+data/
+
+# Large local weights; mount at runtime instead
+serve/weights/*
+!serve/weights/README.md
+

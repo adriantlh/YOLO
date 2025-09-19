@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YOLO FastAPI – Test UI</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; line-height: 1.35; }
+    h1 { font-size: 1.6rem; margin-bottom: 0.2rem; }
+    h2 { font-size: 1.2rem; margin-top: 1.6rem; }
+    .box { border: 1px solid #ddd; padding: 16px; border-radius: 8px; }
+    .row { margin: 8px 0; }
+    .muted { color: #666; }
+    pre { background: #f7f7f7; padding: 12px; border-radius: 6px; overflow: auto; }
+    img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 6px; }
+    button { padding: 8px 12px; }
+    input[type="text"] { width: 100%; max-width: 640px; }
+    label { user-select: none; }
+  </style>
+  <script>
+    async function postPredict(file, visualize) {
+      const fd = new FormData();
+      fd.append('file', file);
+      const resp = await fetch(`/predict?visualize=${visualize}`, { method: 'POST', body: fd });
+      return resp;
+    }
+
+    async function postPredictByUrl(url, visualize) {
+      const resp = await fetch(`/predict_by_url?visualize=${visualize}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      return resp;
+    }
+
+    function setJSONResult(el, obj) {
+      el.textContent = JSON.stringify(obj, null, 2);
+      el.style.display = 'block';
+    }
+
+    function setImageResult(imgEl, blob) {
+      const url = URL.createObjectURL(blob);
+      imgEl.src = url;
+      imgEl.style.display = 'block';
+    }
+
+    async function handleUpload() {
+      const fileInput = document.getElementById('file');
+      const visualize = document.getElementById('viz').checked;
+      const jsonOut = document.getElementById('json-out');
+      const imgOut = document.getElementById('img-out');
+      jsonOut.style.display = 'none';
+      imgOut.style.display = 'none';
+      if (!fileInput.files || !fileInput.files[0]) {
+        alert('Please choose an image file.');
+        return;
+      }
+      try {
+        const resp = await postPredict(fileInput.files[0], visualize);
+        if (!resp.ok) {
+          const t = await resp.text();
+          throw new Error(`HTTP ${resp.status}: ${t}`);
+        }
+        if (visualize) {
+          const blob = await resp.blob();
+          setImageResult(imgOut, blob);
+        } else {
+          const data = await resp.json();
+          setJSONResult(jsonOut, data);
+        }
+      } catch (e) {
+        setJSONResult(jsonOut, { error: String(e) });
+      }
+    }
+
+    async function handleUrl() {
+      const urlInput = document.getElementById('img-url');
+      const visualize = document.getElementById('viz-url').checked;
+      const jsonOut = document.getElementById('json-out-url');
+      const imgOut = document.getElementById('img-out-url');
+      jsonOut.style.display = 'none';
+      imgOut.style.display = 'none';
+      const url = urlInput.value.trim();
+      if (!url) { alert('Enter an image URL.'); return; }
+      try {
+        const resp = await postPredictByUrl(url, visualize);
+        if (!resp.ok) {
+          const t = await resp.text();
+          throw new Error(`HTTP ${resp.status}: ${t}`);
+        }
+        if (visualize) {
+          const blob = await resp.blob();
+          setImageResult(imgOut, blob);
+        } else {
+          const data = await resp.json();
+          setJSONResult(jsonOut, data);
+        }
+      } catch (e) {
+        setJSONResult(jsonOut, { error: String(e) });
+      }
+    }
+
+    async function checkHealth() {
+      try {
+        const r = await fetch('/healthz');
+        const j = await r.json();
+        document.getElementById('health').textContent = `healthz: ${j.status ?? 'unknown'}`;
+      } catch (_) {
+        document.getElementById('health').textContent = 'healthz: unreachable';
+      }
+    }
+
+    window.addEventListener('load', checkHealth);
+  </script>
+</head>
+<body>
+  <h1>YOLO FastAPI – Test UI</h1>
+  <div class="muted" id="health">healthz: checking…</div>
+
+  <h2>Upload Image</h2>
+  <div class="box">
+    <div class="row"><input type="file" id="file" accept="image/*" /></div>
+    <div class="row"><label><input type="checkbox" id="viz" /> visualize (return annotated image)</label></div>
+    <div class="row"><button onclick="handleUpload()">Send to /predict</button></div>
+    <div class="row"><pre id="json-out" style="display:none"></pre></div>
+    <div class="row"><img id="img-out" style="display:none" alt="Annotated output" /></div>
+  </div>
+
+  <h2>Image by URL</h2>
+  <div class="box">
+    <div class="row"><input type="text" id="img-url" placeholder="https://example.com/image.jpg" /></div>
+    <div class="row"><label><input type="checkbox" id="viz-url" /> visualize (return annotated image)</label></div>
+    <div class="row"><button onclick="handleUrl()">Send to /predict_by_url</button></div>
+    <div class="row"><pre id="json-out-url" style="display:none"></pre></div>
+    <div class="row"><img id="img-out-url" style="display:none" alt="Annotated output" /></div>
+  </div>
+
+  <p class="muted">Tip: place weights in <code>/app/serve/weights</code> or set <code>YOLO_WEIGHT_PATH</code> for meaningful detections.</p>
+</body>
+</html>
+
