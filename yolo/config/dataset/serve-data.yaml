@@ -1,0 +1,12 @@
+path: serve/Data to train
+
+# Folders relative to `path`
+train: train
+validation: valid
+
+# Classes (must match your data.yaml `names` order)
+class_num: 7
+class_list: ['baseboard', 'bottle', 'fungus', 'hole', 'radiator', 'rip', 'window']
+
+# Optional: leave auto_download unset for manual/local datasets
+

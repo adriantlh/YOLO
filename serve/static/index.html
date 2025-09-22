@@ -5,99 +5,646 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>YOLO FastAPI – Test UI</title>
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; line-height: 1.35; }
-    h1 { font-size: 1.6rem; margin-bottom: 0.2rem; }
-    h2 { font-size: 1.2rem; margin-top: 1.6rem; }
-    .box { border: 1px solid #ddd; padding: 16px; border-radius: 8px; }
-    .row { margin: 8px 0; }
-    .muted { color: #666; }
-    pre { background: #f7f7f7; padding: 12px; border-radius: 6px; overflow: auto; }
-    img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 6px; }
-    button { padding: 8px 12px; }
-    input[type="text"] { width: 100%; max-width: 640px; }
-    label { user-select: none; }
+    :root {
+      color-scheme: light;
+      --bg: #f3f4f6;
+      --surface: #ffffff;
+      --surface-border: #d8dee9;
+      --surface-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+      --muted: #6b7280;
+      --text: #0f172a;
+      --accent: #2563eb;
+      --accent-strong: #1d4ed8;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --radius: 16px;
+      font-size: 16px;
+      font-family: "Inter", "Segoe UI", Roboto, system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 72px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin: 0 0 0.4rem;
+      letter-spacing: -0.01em;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.32rem;
+      letter-spacing: -0.01em;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    p {
+      margin: 0 0 1.1rem;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .layout {
+      margin-top: 32px;
+      display: grid;
+      gap: 28px;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    }
+
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--surface-border);
+      box-shadow: var(--surface-shadow);
+      padding: 26px 26px 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    label {
+      font-weight: 500;
+    }
+
+    input[type="file"] {
+      border: 1px dashed var(--surface-border);
+      border-radius: 12px;
+      padding: 9px 12px;
+      background: #f9fafb;
+      cursor: pointer;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 1rem;
+      background: #fbfdff;
+    }
+
+    input[type="text"]:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #fff;
+      padding: 10px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 12px 20px rgba(37, 99, 235, 0.28);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 24px rgba(37, 99, 235, 0.32);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 16px rgba(37, 99, 235, 0.22);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .status {
+      font-size: 0.95rem;
+    }
+
+    .status.info {
+      color: var(--muted);
+    }
+
+    .status.success {
+      color: var(--success);
+    }
+
+    .status.error {
+      color: var(--danger);
+      font-weight: 600;
+    }
+
+    .file-name {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .preview-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .image-stage {
+      position: relative;
+      border-radius: calc(var(--radius) - 2px);
+      background: linear-gradient(145deg, #eef2ff, #e0f2fe);
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .image-stage.has-image {
+      background: #0b1220;
+    }
+
+    .image-stage img {
+      display: none;
+      width: 100%;
+      height: auto;
+      border-radius: calc(var(--radius) - 4px);
+      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.32);
+    }
+
+    .image-stage.has-image img {
+      display: block;
+    }
+
+    .stage-placeholder {
+      text-align: center;
+      padding: 22px 18px;
+      color: #7c8799;
+      font-size: 0.94rem;
+    }
+
+    .bbox-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .bbox {
+      position: absolute;
+      border: 2px solid rgba(255, 255, 255, 0.75);
+      border-radius: 10px;
+      backdrop-filter: blur(1px);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.4);
+    }
+
+    .bbox .label {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      color: #ffffff;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3);
+      max-width: 240px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .results-block {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .results-header span {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 0.94rem;
+    }
+
+    thead {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    th, td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    td.score {
+      font-variant-numeric: tabular-nums;
+      width: 90px;
+    }
+
+    td.box-coords {
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 0.86rem;
+      color: #1f2937;
+    }
+
+    .json-block {
+      border-radius: 12px;
+      border: 1px solid #e4e9f0;
+      background: #f9fafb;
+      padding: 0 14px 12px;
+    }
+
+    .json-block summary {
+      cursor: pointer;
+      padding: 14px 0 6px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    pre {
+      margin: 0;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      max-height: 300px;
+      overflow: auto;
+      font-family: "JetBrains Mono", "Fira Code", Consolas, monospace;
+    }
+
+    details img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid #d1d9e6;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 720px) {
+      main {
+        padding: 24px 18px 60px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        font-size: 0.88rem;
+      }
+    }
   </style>
   <script>
     async function postPredict(file, visualize) {
       const fd = new FormData();
       fd.append('file', file);
-      const resp = await fetch(`/predict?visualize=${visualize}`, { method: 'POST', body: fd });
-      return resp;
+      return fetch(`/predict?visualize=${visualize}`, { method: 'POST', body: fd });
     }
 
     async function postPredictByUrl(url, visualize) {
-      const resp = await fetch(`/predict_by_url?visualize=${visualize}`, {
+      return fetch(`/predict_by_url?visualize=${visualize}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url })
       });
-      return resp;
     }
 
-    function setJSONResult(el, obj) {
-      el.textContent = JSON.stringify(obj, null, 2);
-      el.style.display = 'block';
+    function createSection(prefix) {
+      const section = {
+        prefix,
+        stage: document.getElementById(`${prefix}-stage`),
+        preview: document.getElementById(`${prefix}-preview`),
+        overlay: document.getElementById(`${prefix}-overlay`),
+        tableBody: document.getElementById(`${prefix}-detections`),
+        count: document.getElementById(`${prefix}-count`),
+        status: document.getElementById(`${prefix}-status`),
+        jsonDetails: document.getElementById(`${prefix}-json-details`),
+        jsonPre: document.getElementById(`${prefix}-json`),
+        serverDetails: document.getElementById(`${prefix}-server-details`),
+        serverImg: document.getElementById(`${prefix}-server-img`),
+        detections: [],
+        serverUrl: null,
+      };
+
+      section.preview.addEventListener('load', () => {
+        section.stage.classList.add('has-image');
+        renderBoundingBoxes(section);
+      });
+
+      section.preview.addEventListener('error', () => {
+        section.stage.classList.remove('has-image');
+        section.overlay.innerHTML = '';
+      });
+
+      return section;
     }
 
-    function setImageResult(imgEl, blob) {
-      const url = URL.createObjectURL(blob);
-      imgEl.src = url;
-      imgEl.style.display = 'block';
+    function colorForClass(cls, fallbackIndex) {
+      const idx = Number.isFinite(cls) ? cls : fallbackIndex;
+      const hue = (idx * 47) % 360;
+      return `hsl(${hue}, 82%, 56%)`;
     }
 
-    async function handleUpload() {
-      const fileInput = document.getElementById('file');
-      const visualize = document.getElementById('viz').checked;
-      const jsonOut = document.getElementById('json-out');
-      const imgOut = document.getElementById('img-out');
-      jsonOut.style.display = 'none';
-      imgOut.style.display = 'none';
-      if (!fileInput.files || !fileInput.files[0]) {
-        alert('Please choose an image file.');
+    function withAlpha(hslColor, alpha) {
+      return hslColor.replace('hsl', 'hsla').replace(')', `, ${alpha})`);
+    }
+
+    function formatScore(score) {
+      if (typeof score !== 'number' || Number.isNaN(score)) return '—';
+      return `${(score * 100).toFixed(1)}%`;
+    }
+
+    function pluralize(count, singular) {
+      return `${count} ${singular}${count === 1 ? '' : 's'}`;
+    }
+
+    function formatBox(det) {
+      const round = (v) => Number.isFinite(v) ? v.toFixed(1) : '?';
+      return `[${round(det.x_min)}, ${round(det.y_min)}] → [${round(det.x_max)}, ${round(det.y_max)}]`;
+    }
+
+    function detectionLabel(det, index) {
+      const fallback = Number.isFinite(det.class) ? `Class ${det.class}` : `Detection ${index + 1}`;
+      const name = det.class_name || det.item_name || det.defect_name || fallback;
+      if (typeof det.score === 'number') {
+        return `${name} · ${(det.score * 100).toFixed(1)}%`;
+      }
+      return name;
+    }
+
+    function setStatus(section, message, type = 'info') {
+      if (!section.status) return;
+      section.status.textContent = message;
+      section.status.className = `status ${type}`;
+    }
+
+    function setJson(section, payload) {
+      if (!section.jsonPre || !section.jsonDetails) return;
+      if (payload === null || payload === undefined) {
+        section.jsonPre.textContent = '';
+        section.jsonDetails.style.display = 'none';
         return;
       }
-      try {
-        const resp = await postPredict(fileInput.files[0], visualize);
-        if (!resp.ok) {
-          const t = await resp.text();
-          throw new Error(`HTTP ${resp.status}: ${t}`);
-        }
-        if (visualize) {
-          const blob = await resp.blob();
-          setImageResult(imgOut, blob);
-        } else {
-          const data = await resp.json();
-          setJSONResult(jsonOut, data);
-        }
-      } catch (e) {
-        setJSONResult(jsonOut, { error: String(e) });
+      section.jsonPre.textContent = typeof payload === 'string' ? payload : JSON.stringify(payload, null, 2);
+      section.jsonDetails.style.display = 'block';
+    }
+
+    function setServerImage(section, blob) {
+      if (!section.serverDetails || !section.serverImg) return;
+      if (section.serverUrl) {
+        URL.revokeObjectURL(section.serverUrl);
+        section.serverUrl = null;
+      }
+      if (!blob) {
+        section.serverImg.src = '';
+        section.serverDetails.style.display = 'none';
+        return;
+      }
+      const objectUrl = URL.createObjectURL(blob);
+      section.serverUrl = objectUrl;
+      section.serverImg.src = objectUrl;
+      section.serverDetails.style.display = 'block';
+    }
+
+    function renderDetectionsTable(section) {
+      if (!section.tableBody) return;
+      section.tableBody.innerHTML = '';
+      if (!section.detections.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 3;
+        cell.textContent = 'No detections yet.';
+        cell.classList.add('muted');
+        row.appendChild(cell);
+        section.tableBody.appendChild(row);
+        if (section.count) section.count.textContent = '0 detections';
+        return;
+      }
+      section.detections.forEach((det, idx) => {
+        const color = colorForClass(det.class, idx);
+        const row = document.createElement('tr');
+
+        const labelCell = document.createElement('td');
+        labelCell.textContent = det.class_name || det.item_name || det.defect_name || `Class ${det.class ?? idx}`;
+        labelCell.style.fontWeight = '600';
+        labelCell.style.color = '#111827';
+        row.appendChild(labelCell);
+
+        const scoreCell = document.createElement('td');
+        scoreCell.className = 'score';
+        scoreCell.textContent = formatScore(det.score);
+        scoreCell.style.color = color;
+        row.appendChild(scoreCell);
+
+        const boxCell = document.createElement('td');
+        boxCell.className = 'box-coords';
+        boxCell.textContent = formatBox(det);
+        row.appendChild(boxCell);
+
+        section.tableBody.appendChild(row);
+      });
+      if (section.count) {
+        section.count.textContent = `${pluralize(section.detections.length, 'detection')}`;
       }
     }
 
-    async function handleUrl() {
+    function renderBoundingBoxes(section) {
+      if (!section.overlay || !section.preview) return;
+      section.overlay.innerHTML = '';
+      if (!section.detections.length) return;
+      if (!section.preview.complete || !section.preview.naturalWidth) return;
+      const scaleX = section.preview.clientWidth / section.preview.naturalWidth;
+      const scaleY = section.preview.clientHeight / section.preview.naturalHeight;
+      section.detections.forEach((det, idx) => {
+        const left = (det.x_min ?? 0) * scaleX;
+        const top = (det.y_min ?? 0) * scaleY;
+        const width = Math.max((det.x_max ?? 0) - (det.x_min ?? 0), 0) * scaleX;
+        const height = Math.max((det.y_max ?? 0) - (det.y_min ?? 0), 0) * scaleY;
+        if (width <= 1 || height <= 1) return;
+        const color = colorForClass(det.class, idx);
+        const box = document.createElement('div');
+        box.className = 'bbox';
+        box.style.left = `${left}px`;
+        box.style.top = `${top}px`;
+        box.style.width = `${width}px`;
+        box.style.height = `${height}px`;
+        box.style.borderColor = color;
+        box.style.background = withAlpha(color, 0.16);
+
+        const label = document.createElement('span');
+        label.className = 'label';
+        label.style.borderColor = color;
+        label.style.background = withAlpha(color, 0.85);
+        label.style.color = '#ffffff';
+        label.textContent = detectionLabel(det, idx);
+
+        box.appendChild(label);
+        section.overlay.appendChild(box);
+      });
+    }
+
+    function clearDetections(section) {
+      section.detections = [];
+      renderDetectionsTable(section);
+      renderBoundingBoxes(section);
+      setJson(section, null);
+      setServerImage(section, null);
+    }
+
+    function updateSection(section, detections) {
+      section.detections = Array.isArray(detections) ? detections : [];
+      renderDetectionsTable(section);
+      setJson(section, section.detections);
+      renderBoundingBoxes(section);
+      if (section.detections.length) {
+        setStatus(section, 'Detections ready.', 'success');
+      } else {
+        setStatus(section, 'No detections returned.', 'info');
+      }
+    }
+
+    function handleFileSelection(input, section, fileNameEl) {
+      const file = input.files && input.files[0];
+      clearDetections(section);
+      if (!file) {
+        section.preview.src = '';
+        section.stage.classList.remove('has-image');
+        if (fileNameEl) fileNameEl.textContent = 'No file selected yet.';
+        return;
+      }
+      const sizeKb = (file.size / 1024).toFixed(1);
+      if (fileNameEl) fileNameEl.textContent = `${file.name} · ${sizeKb} KB`;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        section.preview.src = ev.target?.result || '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function runUpload(section) {
+      const fileInput = document.getElementById('file');
+      const visualize = document.getElementById('viz').checked;
+      if (!fileInput.files || !fileInput.files[0]) {
+        alert('Please choose an image file first.');
+        return;
+      }
+      const file = fileInput.files[0];
+      setStatus(section, 'Running detection…', 'info');
+      clearDetections(section);
+      try {
+        const jsonResp = await postPredict(file, false);
+        if (!jsonResp.ok) {
+          const message = await jsonResp.text();
+          throw new Error(`HTTP ${jsonResp.status}: ${message}`);
+        }
+        const detections = await jsonResp.json();
+        updateSection(section, detections);
+
+        if (visualize) {
+          const vizResp = await postPredict(file, true);
+          if (!vizResp.ok) {
+            const msg = await vizResp.text();
+            setStatus(section, `Detections ready, but failed to fetch annotated image (${vizResp.status}).`, 'error');
+            setServerImage(section, null);
+            setJson(section, detections);
+          } else {
+            const blob = await vizResp.blob();
+            setServerImage(section, blob);
+          }
+        } else {
+          setServerImage(section, null);
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus(section, String(err), 'error');
+        setJson(section, { error: String(err) });
+      }
+    }
+
+    async function runUrlInference(section) {
       const urlInput = document.getElementById('img-url');
       const visualize = document.getElementById('viz-url').checked;
-      const jsonOut = document.getElementById('json-out-url');
-      const imgOut = document.getElementById('img-out-url');
-      jsonOut.style.display = 'none';
-      imgOut.style.display = 'none';
       const url = urlInput.value.trim();
-      if (!url) { alert('Enter an image URL.'); return; }
+      if (!url) {
+        alert('Please paste an image URL.');
+        return;
+      }
+      section.preview.src = '';
+      section.stage.classList.remove('has-image');
+      clearDetections(section);
+      setStatus(section, 'Fetching remote image and running detection…', 'info');
       try {
-        const resp = await postPredictByUrl(url, visualize);
-        if (!resp.ok) {
-          const t = await resp.text();
-          throw new Error(`HTTP ${resp.status}: ${t}`);
+        const jsonResp = await postPredictByUrl(url, false);
+        if (!jsonResp.ok) {
+          const message = await jsonResp.text();
+          throw new Error(`HTTP ${jsonResp.status}: ${message}`);
         }
+        const detections = await jsonResp.json();
+        updateSection(section, detections);
+        section.preview.crossOrigin = 'anonymous';
+        section.preview.src = url;
+
         if (visualize) {
-          const blob = await resp.blob();
-          setImageResult(imgOut, blob);
+          const vizResp = await postPredictByUrl(url, true);
+          if (!vizResp.ok) {
+            const msg = await vizResp.text();
+            setStatus(section, `Detections ready, but annotated image failed (${vizResp.status}).`, 'error');
+            setServerImage(section, null);
+            setJson(section, detections);
+          } else {
+            const blob = await vizResp.blob();
+            setServerImage(section, blob);
+          }
         } else {
-          const data = await resp.json();
-          setJSONResult(jsonOut, data);
+          setServerImage(section, null);
         }
-      } catch (e) {
-        setJSONResult(jsonOut, { error: String(e) });
+      } catch (err) {
+        console.error(err);
+        setStatus(section, String(err), 'error');
+        setJson(section, { error: String(err) });
       }
     }
 
@@ -111,32 +658,151 @@
       }
     }
 
-    window.addEventListener('load', checkHealth);
+    window.addEventListener('load', () => {
+      checkHealth();
+
+      const uploadSection = createSection('upload');
+      const urlSection = createSection('url');
+      const fileNameEl = document.getElementById('file-name');
+      const uploadButton = document.getElementById('upload-btn');
+      const urlButton = document.getElementById('url-btn');
+      const fileInput = document.getElementById('file');
+
+      fileInput.addEventListener('change', () => handleFileSelection(fileInput, uploadSection, fileNameEl));
+
+      uploadButton.addEventListener('click', async () => {
+        uploadButton.disabled = true;
+        uploadButton.textContent = 'Running…';
+        try {
+          await runUpload(uploadSection);
+        } finally {
+          uploadButton.disabled = false;
+          uploadButton.textContent = 'Run detection';
+        }
+      });
+
+      urlButton.addEventListener('click', async () => {
+        urlButton.disabled = true;
+        urlButton.textContent = 'Running…';
+        try {
+          await runUrlInference(urlSection);
+        } finally {
+          urlButton.disabled = false;
+          urlButton.textContent = 'Run detection';
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        renderBoundingBoxes(uploadSection);
+        renderBoundingBoxes(urlSection);
+      });
+    });
   </script>
 </head>
 <body>
-  <h1>YOLO FastAPI – Test UI</h1>
-  <div class="muted" id="health">healthz: checking…</div>
+  <main>
+    <header>
+      <h1>YOLO FastAPI – Test UI</h1>
+      <div class="muted" id="health">healthz: checking…</div>
+      <p class="muted">Upload an image or provide a URL to view YOLO detections instantly. The preview overlays bounding boxes using the JSON response so you can inspect results in detail.</p>
+    </header>
 
-  <h2>Upload Image</h2>
-  <div class="box">
-    <div class="row"><input type="file" id="file" accept="image/*" /></div>
-    <div class="row"><label><input type="checkbox" id="viz" /> visualize (return annotated image)</label></div>
-    <div class="row"><button onclick="handleUpload()">Send to /predict</button></div>
-    <div class="row"><pre id="json-out" style="display:none"></pre></div>
-    <div class="row"><img id="img-out" style="display:none" alt="Annotated output" /></div>
-  </div>
+    <section class="layout">
+      <section class="panel" aria-labelledby="upload-title">
+        <div>
+          <h2 id="upload-title">Upload Image</h2>
+          <p class="muted">Select a local image to run through the detector. Bounding boxes are drawn on the original image for instant feedback.</p>
+        </div>
 
-  <h2>Image by URL</h2>
-  <div class="box">
-    <div class="row"><input type="text" id="img-url" placeholder="https://example.com/image.jpg" /></div>
-    <div class="row"><label><input type="checkbox" id="viz-url" /> visualize (return annotated image)</label></div>
-    <div class="row"><button onclick="handleUrl()">Send to /predict_by_url</button></div>
-    <div class="row"><pre id="json-out-url" style="display:none"></pre></div>
-    <div class="row"><img id="img-out-url" style="display:none" alt="Annotated output" /></div>
-  </div>
+        <div class="preview-pane">
+          <div class="control-group">
+            <input type="file" id="file" accept="image/*" />
+            <label><input type="checkbox" id="viz" /> Request server annotated image</label>
+          </div>
+          <div class="file-name" id="file-name">No file selected yet.</div>
 
-  <p class="muted">Tip: place weights in <code>/app/serve/weights</code> or set <code>YOLO_WEIGHT_PATH</code> for meaningful detections.</p>
+          <button id="upload-btn">Run detection</button>
+          <div id="upload-status" class="status info">Awaiting input…</div>
+
+          <div id="upload-stage" class="image-stage">
+            <div class="stage-placeholder" id="upload-placeholder">Select an image to see the preview with detection overlays.</div>
+            <img id="upload-preview" alt="Uploaded image preview" />
+            <div id="upload-overlay" class="bbox-layer"></div>
+          </div>
+        </div>
+
+        <div class="results-block">
+          <div class="results-header">
+            <h3>Detections</h3>
+            <span id="upload-count">0 detections</span>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Label</th><th>Score</th><th>Box (x/y)</th></tr>
+            </thead>
+            <tbody id="upload-detections"></tbody>
+          </table>
+        </div>
+
+        <details class="json-block" id="upload-json-details" style="display:none">
+          <summary>Raw JSON response</summary>
+          <pre id="upload-json"></pre>
+        </details>
+
+        <details class="json-block" id="upload-server-details" style="display:none">
+          <summary>Server annotated image</summary>
+          <img id="upload-server-img" alt="Annotated output returned by the API" />
+        </details>
+      </section>
+
+      <section class="panel" aria-labelledby="url-title">
+        <div>
+          <h2 id="url-title">Image by URL</h2>
+          <p class="muted">Paste a direct or presigned image URL. We will fetch the image, run detection, and overlay the boxes here in the browser.</p>
+        </div>
+
+        <div class="preview-pane">
+          <div class="control-group">
+            <input type="text" id="img-url" placeholder="https://example.com/image.jpg" />
+            <label><input type="checkbox" id="viz-url" /> Request server annotated image</label>
+          </div>
+
+          <button id="url-btn">Run detection</button>
+          <div id="url-status" class="status info">Awaiting URL…</div>
+
+          <div id="url-stage" class="image-stage">
+            <div class="stage-placeholder" id="url-placeholder">Provide an image URL and run detection to preview results.</div>
+            <img id="url-preview" alt="Remote image preview" />
+            <div id="url-overlay" class="bbox-layer"></div>
+          </div>
+        </div>
+
+        <div class="results-block">
+          <div class="results-header">
+            <h3>Detections</h3>
+            <span id="url-count">0 detections</span>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Label</th><th>Score</th><th>Box (x/y)</th></tr>
+            </thead>
+            <tbody id="url-detections"></tbody>
+          </table>
+        </div>
+
+        <details class="json-block" id="url-json-details" style="display:none">
+          <summary>Raw JSON response</summary>
+          <pre id="url-json"></pre>
+        </details>
+
+        <details class="json-block" id="url-server-details" style="display:none">
+          <summary>Server annotated image</summary>
+          <img id="url-server-img" alt="Annotated output returned by the API" />
+        </details>
+      </section>
+    </section>
+
+    <p class="muted" style="margin-top: 36px;">Tip: place weights in <code>/app/serve/weights</code> or set <code>YOLO_WEIGHT_PATH</code> for meaningful detections.</p>
+  </main>
 </body>
 </html>
-

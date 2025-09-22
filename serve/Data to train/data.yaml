@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 7
+names: ['baseboard', 'bottle', 'fungus', 'hole', 'radiator', 'rip', 'window']
+
+roboflow:
+  workspace: imageimage-oad1n
+  project: house-defect
+  version: 11
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/imageimage-oad1n/house-defect/dataset/11

@@ -24,6 +24,7 @@ def _load_class_list() -> List[str]:
 
     Priority:
     - `YOLO_DATA_YAML` env var if points to a YAML with `names` list (YOLOv5 format).
+    - `serve/config/data.yaml` if present.
     - `./data.yaml` in repo root if it has `names`.
     - `yolo/config/dataset/coco.yaml` `class_list` as fallback.
     """
@@ -32,6 +33,7 @@ def _load_class_list() -> List[str]:
     env_path = os.getenv("YOLO_DATA_YAML")
     if env_path:
         candidates.append(Path(env_path))
+    candidates.append(Path("serve/config/data.yaml"))
     candidates.append(Path("data.yaml"))
 
     for path in candidates:
@@ -63,8 +65,14 @@ def _load_item_defect_taxonomy() -> Tuple[List[str], List[str]]:
     object_types: List[str] = []
     defect_types: List[str] = []
     env_txt = os.getenv("YOLO_DEFECT_TYPES", "")
-    txt_path = Path(env_txt) if env_txt else Path("Defect Types.txt")
-    if not txt_path.exists():
+    # Try env var, then repo root, then serve/config fallback
+    candidates = []
+    if env_txt:
+        candidates.append(Path(env_txt))
+    candidates.append(Path("Defect Types.txt"))
+    candidates.append(Path("serve/config/Defect Types.txt"))
+    txt_path = next((p for p in candidates if p.exists()), None)
+    if not txt_path:
         return object_types, defect_types
     try:
         content = txt_path.read_text(encoding="utf-8")
@@ -115,8 +123,8 @@ def _class_to_item_defect(class_name: str, object_vocab: List[str], defect_vocab
 
 def load_model_and_processors():
     """Lazy-loads model and post-processing utilities for inference."""
-    # Load a default model config (v9-c) without relying on Hydra composition
-    model_cfg_path = os.getenv("YOLO_MODEL_CFG", "yolo/config/model/v9-c.yaml")
+    # Load a default model config from serve/config to align with house-defect setup
+    model_cfg_path = os.getenv("YOLO_MODEL_CFG", "serve/config/model.yaml")
     model_cfg = OmegaConf.load(model_cfg_path)
 
     # Build model using weights if explicitly provided via env, otherwise

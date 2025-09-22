@@ -21,7 +21,7 @@ import numpy as np
 import torch
 import wandb
 from lightning import LightningModule, Trainer, seed_everything
-from lightning.pytorch.callbacks import Callback, RichModelSummary, RichProgressBar
+from lightning.pytorch.callbacks import Callback, ModelCheckpoint, RichModelSummary, RichProgressBar
 from lightning.pytorch.callbacks.progress.rich_progress import CustomProgress
 from lightning.pytorch.loggers import TensorBoardLogger, WandbLogger
 from lightning.pytorch.utilities import rank_zero_only
@@ -68,7 +68,12 @@ class YOLORichProgressBar(RichProgressBar):
             self._reset_progress_bar_ids()
             reconfigure(**self._console_kwargs)
             self._console = Console()
-            self._console.clear_live()
+            # Some environments have an empty live stack; calling clear_live() would raise IndexError.
+            try:
+                if hasattr(self._console, "_live_stack") and self._console._live_stack:
+                    self._console.clear_live()
+            except Exception:
+                pass
             self.progress = YOLOCustomProgress(
                 *self.configure_columns(trainer),
                 auto_refresh=False,
@@ -238,6 +243,41 @@ class ImageLogger(Callback):
                 logger.log_image("Prediction", images, step=step, boxes=[log_bbox(pred_boxes)])
 
 
+class WeightsExporter(Callback):
+    """Exports plain .pt weights (PyTorch state_dict) for serving.
+
+    - Saves best weights to `<run_dir>/weights/best.pt` based on monitored metric (default: `map`).
+    - Saves last weights to `<run_dir>/weights/last.pt` at train end.
+    """
+
+    def __init__(self, monitor: str = "map", mode: str = "max"):
+        super().__init__()
+        self.monitor = monitor
+        self.mode = mode
+        self.best = -float("inf") if mode == "max" else float("inf")
+
+    def _export(self, trainer: Trainer, pl_module: LightningModule, filename: str) -> None:
+        export_dir = Path(trainer.default_root_dir) / "weights"
+        export_dir.mkdir(parents=True, exist_ok=True)
+        export_path = export_dir / filename
+        # pl_module.model is YOLO; pl_module.model.model is the ModuleList whose state_dict matches loader
+        torch.save(pl_module.model.model.state_dict(), export_path)
+        logger.info(f"💾 Exported weights to {export_path}")
+
+    def on_validation_end(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        metrics = trainer.callback_metrics
+        if self.monitor not in metrics:
+            return
+        val = float(metrics[self.monitor])
+        improved = val > self.best if self.mode == "max" else val < self.best
+        if improved:
+            self.best = val
+            self._export(trainer, pl_module, "best.pt")
+
+    def on_train_end(self, trainer: Trainer, pl_module: LightningModule) -> None:
+        self._export(trainer, pl_module, "last.pt")
+
+
 def setup_logger(logger_name, quite=False):
     class EmojiFormatter(logging.Formatter):
         def format(self, record, emoji=":high_voltage:"):
@@ -282,6 +322,20 @@ def setup(cfg: Config):
     progress.append(YOLORichProgressBar())
     progress.append(YOLORichModelSummary())
     progress.append(ImageLogger())
+    # Checkpoint best and last; monitor COCO mAP (logged as 'map')
+    ckpt = ModelCheckpoint(
+        dirpath=save_path,
+        filename="epoch{epoch:03d}-map{map:.4f}-map50{map_50:.4f}",
+        monitor="map",
+        mode="max",
+        save_last=True,
+        save_top_k=1,
+        every_n_epochs=1,
+        auto_insert_metric_name=False,
+    )
+    progress.append(ckpt)
+    # Export plain .pt weights for serving
+    progress.append(WeightsExporter(monitor="map", mode="max"))
     if cfg.use_tensorboard:
         loggers.append(TensorBoardLogger(log_graph="all", save_dir=save_path))
     if cfg.use_wandb:

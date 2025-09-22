@@ -1,6 +1,7 @@
 name: v9-c
 
 anchor:
+  class_num: 7
   reg_max: 16
   strides: [8, 16, 32]
 
@@ -130,4 +131,3 @@ model:
         source: [A3, A4, A5]
         tags: AUX
         output: True
-

@@ -150,11 +150,25 @@ class YoloDataset(Dataset):
         """
         bboxes = []
         for seg_data in seg_data_one_img:
+            if not seg_data:
+                continue
             cls = seg_data[0]
-            points = np.array(seg_data[1:]).reshape(-1, 2).clip(0, 1)
+            vals = seg_data[1:]
+            # Support YOLOv5 bbox TXT format: cls cx cy w h (normalized)
+            if len(vals) == 4:
+                cx, cy, w, h = np.array(vals).clip(0, 1)
+                x_min = max(cx - w / 2, 0.0)
+                y_min = max(cy - h / 2, 0.0)
+                x_max = min(cx + w / 2, 1.0)
+                y_max = min(cy + h / 2, 1.0)
+                bbox = torch.tensor([cls, x_min, y_min, x_max, y_max], dtype=torch.float32)
+                bboxes.append(bbox)
+                continue
+            # Segmentation/polygon style: cls x1 y1 x2 y2 ... (normalized)
+            points = np.array(vals).reshape(-1, 2).clip(0, 1)
             valid_points = points[(points >= 0) & (points <= 1)].reshape(-1, 2)
             if valid_points.size > 1:
-                bbox = torch.tensor([cls, *valid_points.min(axis=0), *valid_points.max(axis=0)])
+                bbox = torch.tensor([cls, *valid_points.min(axis=0), *valid_points.max(axis=0)], dtype=torch.float32)
                 bboxes.append(bbox)
 
         if bboxes:
